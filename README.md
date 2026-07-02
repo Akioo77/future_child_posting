@@ -53,7 +53,8 @@ future_child_posting/
 ```bash
 cd backend
 pip install -r requirements.txt
-# 配置 MINIMAX_API_KEY（在 ai_service.py 中替换）
+cp .env.example .env
+# 编辑 .env，填入你的 DASHSCOPE_API_KEY
 uvicorn main:app --reload --port 8000
 ```
 
@@ -72,7 +73,8 @@ npm run dev
 
 ## 🔑 注意事项
 
-- Minimax API Key 需要在 `backend/services/ai_service.py` 中替换
+- DASHSCOPE_API_KEY 需要在 `.env` 文件中配置（参考 `.env.example`）
+- `.env` 文件已加入 `.gitignore`，不会被推送到远程仓库
 - 通过代理 `http://127.0.0.1:7897` 访问（需开启 Clash Verge）
 - 图片最大 10MB
 

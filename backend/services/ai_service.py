@@ -5,11 +5,12 @@ API：OpenAI 兼容端点 https://dashscope.aliyuncs.com/compatible-mode/v1
 """
 
 import json
+import os
 import httpx
 from backend.models.schemas import RiskItem, SuggestionItem
 
 # ── 配置 ──────────────────────────────────────────────
-DASHSCOPE_API_KEY = "sk-18c645978cf5462e9861161d47144a90"
+DASHSCOPE_API_KEY = os.environ.get("DASHSCOPE_API_KEY", "")
 DASHSCOPE_API_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 MODEL_NAME = "qwen3.6-plus"  # 支持图片+文字，request_modality: Image+Text+Video
 
