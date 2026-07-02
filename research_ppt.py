@@ -817,6 +817,263 @@ def slide_project_rq(prs):
     return slide
 
 # ================================================================
+def slide_mvp_overview(prs):
+    """MVP 原型概览"""
+    slide = bg(prs, C_BG)
+    section_header(slide, "MVP 原型  |  系统概览", "Prototype")
+
+    # 标题说明
+    add_rect(slide, Inches(0.4), Inches(0.95), Inches(12.5), Inches(0.7), C_LIGHT, C_PURPLE, Pt(1.5))
+    add_text(slide, "基于 Imago Obscura 风险框架，构建了一个可演示的 MVP 原型，支持图片+文字联合分析，识别 5 类儿童隐私风险并给出脱敏建议。",
+             Inches(0.6), Inches(1.05), Inches(12.2), Inches(0.6),
+             font_size=13, color=C_DARK2)
+
+    # 三个核心指标卡片
+    cards = [
+        ("🖼️ 图片支持", "最多 9 张图\n联合分析", C_PURPLE),
+        ("🔍 风险类别", "R1–R5 共 5 类\n隐私风险检测", C_AMBER),
+        ("💡 脱敏建议", "逐条风险\n修改建议", C_GREEN),
+    ]
+    x = Inches(0.4)
+    for title, desc, color in cards:
+        add_rect(slide, x, Inches(1.9), Inches(4.0), Inches(2.0), C_WHITE, color, Pt(2))
+        add_rect(slide, x, Inches(1.9), Inches(4.0), Inches(0.55), color)
+        add_text(slide, title, x + Inches(0.15), Inches(1.97), Inches(3.7), Inches(0.42),
+                 font_size=14, bold=True, color=C_WHITE)
+        add_text(slide, desc, x + Inches(0.15), Inches(2.55), Inches(3.7), Inches(1.2),
+                 font_size=20, bold=True, color=color, align=PP_ALIGN.CENTER)
+        x += Inches(4.3)
+
+    # 工作流程
+    add_text(slide, "用户使用流程", Inches(0.4), Inches(4.15), Inches(3.0), Inches(0.4),
+             font_size=13, bold=True, color=C_DARK)
+    flow = ["上传图片 + 输入文案", "AI 风险扫描", "生成报告 + 脱敏建议"]
+    colors_flow = [C_PURPLE, C_AMBER, C_GREEN]
+    x = Inches(0.4)
+    for i, step in enumerate(flow):
+        add_rect(slide, x, Inches(4.6), Inches(3.5), Inches(0.8), colors_flow[i])
+        add_text(slide, step, x + Inches(0.1), Inches(4.72), Inches(3.3), Inches(0.55),
+                 font_size=13, bold=True, color=C_WHITE, align=PP_ALIGN.CENTER)
+        if i < len(flow) - 1:
+            add_text(slide, "→", x + Inches(3.55), Inches(4.72), Inches(0.5), Inches(0.55),
+                     font_size=20, bold=True, color=C_DARK, align=PP_ALIGN.CENTER)
+        x += Inches(4.0)
+
+    # 技术栈
+    add_text(slide, "技术栈", Inches(0.4), Inches(5.65), Inches(2.0), Inches(0.4),
+             font_size=13, bold=True, color=C_DARK)
+    tech_stack = [
+        ("后端", "FastAPI + Python", C_TEAL),
+        ("前端", "Next.js + React", C_PURPLE),
+        ("AI 模型", "qwen3.6-plus（阿里云百炼）", C_AMBER),
+        ("代理", "Clash Verge (7897)", C_GRAY),
+    ]
+    x = Inches(0.4)
+    for label, val, color in tech_stack:
+        add_rect(slide, x, Inches(6.1), Inches(3.1), Inches(0.95), color)
+        add_text(slide, label, x + Inches(0.1), Inches(6.15), Inches(2.9), Inches(0.35),
+                 font_size=10, bold=True, color=C_WHITE)
+        add_text(slide, val, x + Inches(0.1), Inches(6.48), Inches(2.9), Inches(0.45),
+                 font_size=11, bold=True, color=C_WHITE)
+        x += Inches(3.28)
+
+    return slide
+
+
+def slide_mvp_upload(prs):
+    """MVP 上传界面"""
+    slide = bg(prs, C_BG)
+    section_header(slide, "MVP 原型  |  上传与分析界面", "Demo")
+
+    # 左侧：界面描述
+    add_rect(slide, Inches(0.4), Inches(0.95), Inches(6.0), Inches(6.2), C_WHITE, C_PURPLE, Pt(1.5))
+    add_rect(slide, Inches(0.4), Inches(0.95), Inches(6.0), Inches(0.55), C_PURPLE)
+    add_text(slide, "上传与输入面板", Inches(0.55), Inches(1.0), Inches(5.7), Inches(0.42),
+             font_size=13, bold=True, color=C_WHITE)
+
+    features = [
+        ("📷 图片上传区", "支持拖拽或点击上传最多 9 张图片，显示缩略图预览，提示文件大小和格式限制"),
+        ("📝 文字输入框", "用户输入准备发布的内容描述或分享意图，支持多行文本输入"),
+        ("🚀 一键分析", "点击「开始分析」按钮，触发 AI 风险扫描，显示加载动画"),
+        ("⏳ 等待过程", "实时显示分析进度和状态，给出预估时间提示"),
+    ]
+    y = Inches(1.65)
+    for title, desc in features:
+        add_rect(slide, Inches(0.55), y, Inches(5.7), Inches(1.2), C_LIGHT)
+        add_text(slide, title, Inches(0.7), y + Inches(0.1), Inches(5.4), Inches(0.38),
+                 font_size=12, bold=True, color=C_PURPLE)
+        add_text(slide, desc, Inches(0.7), y + Inches(0.48), Inches(5.4), Inches(0.65),
+                 font_size=11, color=C_DARK)
+        y += Inches(1.28)
+
+    # 右侧：交互说明
+    add_rect(slide, Inches(6.7), Inches(0.95), Inches(6.2), Inches(6.2), C_WHITE, C_AMBER, Pt(1.5))
+    add_rect(slide, Inches(6.7), Inches(0.95), Inches(6.2), Inches(0.55), C_AMBER)
+    add_text(slide, "交互设计细节", Inches(6.85), Inches(1.0), Inches(5.9), Inches(0.42),
+             font_size=13, bold=True, color=C_WHITE)
+
+    details = [
+        ("无压力设计", "用户可以随时修改图片或文字，多次提交分析而不产生实际发布行为"),
+        ("隐私保护", "图片仅在分析过程中使用，不会持久化存储，消除用户隐私顾虑"),
+        ("渐进式引导", "为首次使用的家长提供操作提示，降低使用门槛"),
+        ("多图协同", "多张图片之间可标注关联（如「左图是孩子，右图是家庭成员」），帮助 AI 理解场景"),
+    ]
+    y = Inches(1.65)
+    for title, desc in details:
+        add_rect(slide, Inches(6.8), y, Inches(6.0), Inches(1.2), C_LIGHT)
+        add_text(slide, title, Inches(6.95), y + Inches(0.1), Inches(5.7), Inches(0.38),
+                 font_size=12, bold=True, color=C_AMBER)
+        add_text(slide, desc, Inches(6.95), y + Inches(0.48), Inches(5.7), Inches(0.65),
+                 font_size=11, color=C_DARK)
+        y += Inches(1.28)
+
+    return slide
+
+
+def slide_mvp_report(prs):
+    """MVP 风险报告页面"""
+    slide = bg(prs, C_BG)
+    section_header(slide, "MVP 原型  |  风险报告展示", "Demo")
+
+    # 顶部说明
+    add_rect(slide, Inches(0.4), Inches(0.95), Inches(12.5), Inches(0.65), C_LIGHT, C_PINK, Pt(1.5))
+    add_text(slide, "分析完成后，展示 R1–R5 每类风险的检测结果、严重程度（低/中/高）以及针对性的脱敏修改建议。",
+             Inches(0.6), Inches(1.05), Inches(12.2), Inches(0.5),
+             font_size=13, color=C_DARK2)
+
+    # 5类风险卡片
+    risks = [
+        ("R1", "自我披露风险", "检测孩子外貌、姓名、学校等可识别信息披露", C_RED),
+        ("R2", "背景泄露风险", "家庭住址、旅行行程、活动场所等背景信息", C_AMBER),
+        ("R3", "行为风险", "危险行为、不当内容或不安全情境的展示", C_PINK),
+        ("R4", "元数据风险", "照片 EXIF 地理位置、时间戳等隐藏信息的泄露", C_PURPLE),
+        ("R5", "二次传播风险", "内容被截图、转发或用于非预期目的的可能性", C_TEAL),
+    ]
+    x = Inches(0.4)
+    for code, title, desc, color in risks:
+        add_rect(slide, x, Inches(1.8), Inches(2.45), Inches(2.8), C_WHITE, color, Pt(2))
+        add_rect(slide, x, Inches(1.8), Inches(2.45), Inches(0.5), color)
+        add_text(slide, code, x + Inches(0.1), Inches(1.85), Inches(1.0), Inches(0.42),
+                 font_size=16, bold=True, color=C_WHITE)
+        add_text(slide, title, x + Inches(1.1), Inches(1.88), Inches(1.25), Inches(0.38),
+                 font_size=9, bold=True, color=C_WHITE)
+        add_text(slide, desc, x + Inches(0.1), Inches(2.38), Inches(2.25), Inches(2.0),
+                 font_size=10, color=C_DARK)
+        x += Inches(2.55)
+
+    # 报告UI说明
+    add_rect(slide, Inches(0.4), Inches(4.85), Inches(7.5), Inches(2.3), C_WHITE, C_GREEN, Pt(1.5))
+    add_rect(slide, Inches(0.4), Inches(4.85), Inches(7.5), Inches(0.5), C_GREEN)
+    add_text(slide, "风险报告 UI 设计", Inches(0.55), Inches(4.9), Inches(7.2), Inches(0.42),
+             font_size=12, bold=True, color=C_WHITE)
+    report_features = [
+        "• 每类风险独立卡片，带颜色编码（红/橙/粉/紫/青）",
+        "• 风险严重程度：低（L）/ 中（M）/ 高（H）三级标注",
+        "• 每条风险配有「为什么会这样」的解释文字",
+        "• 「修改建议」按钮可展开 AI 给出的脱敏方案",
+    ]
+    y = Inches(5.45)
+    for item in report_features:
+        add_text(slide, item, Inches(0.6), y, Inches(7.1), Inches(0.38),
+                 font_size=11, color=C_DARK)
+        y += Inches(0.4)
+
+    # AI改写说明
+    add_rect(slide, Inches(8.2), Inches(4.85), Inches(4.7), Inches(2.3), C_WHITE, C_TEAL, Pt(1.5))
+    add_rect(slide, Inches(8.2), Inches(4.85), Inches(4.7), Inches(0.5), C_TEAL)
+    add_text(slide, "AI 文案改写功能", Inches(8.35), Inches(4.9), Inches(4.4), Inches(0.42),
+             font_size=12, bold=True, color=C_WHITE)
+    rewrite = [
+        "• 「生成安全文案」：AI 输出一整段脱敏后的替代文案",
+        "• 保留原意，过滤可识别信息",
+        "• 用户可直接复制使用，或继续调整",
+    ]
+    y = Inches(5.45)
+    for item in rewrite:
+        add_text(slide, item, Inches(8.35), y, Inches(4.4), Inches(0.45),
+                 font_size=11, color=C_DARK)
+        y += Inches(0.45)
+
+    return slide
+
+
+def slide_mvp_tech(prs):
+    """MVP 技术实现"""
+    slide = bg(prs, C_BG)
+    section_header(slide, "MVP 原型  |  技术实现与数据流", "Tech")
+
+    # 数据流图（文字版）
+    add_text(slide, "系统数据流", Inches(0.4), Inches(0.95), Inches(3.0), Inches(0.4),
+             font_size=13, bold=True, color=C_DARK)
+
+    flow_steps = [
+        ("用户", "上传图片 + 文字", C_PURPLE),
+        ("前端", "Base64 编码", C_AMBER),
+        ("后端", "FastAPI 接收", C_TEAL),
+        ("AI 服务", "qwen3.6-plus", C_PINK),
+        ("返回", "风险报告 JSON", C_GREEN),
+        ("前端", "渲染报告 UI", C_PURPLE),
+    ]
+    x = Inches(0.4)
+    for i, (node, action, color) in enumerate(flow_steps):
+        add_rect(slide, x, Inches(1.4), Inches(2.0), Inches(0.85), color)
+        add_text(slide, node, x + Inches(0.1), Inches(1.45), Inches(1.8), Inches(0.38),
+                 font_size=12, bold=True, color=C_WHITE)
+        add_text(slide, action, x + Inches(0.1), Inches(1.8), Inches(1.8), Inches(0.38),
+                 font_size=9, color=C_WHITE)
+        if i < len(flow_steps) - 1:
+            add_text(slide, "→", x + Inches(2.05), Inches(1.55), Inches(0.3), Inches(0.5),
+                     font_size=18, bold=True, color=C_DARK, align=PP_ALIGN.CENTER)
+        x += Inches(2.35)
+
+    # API 设计
+    add_rect(slide, Inches(0.4), Inches(2.5), Inches(6.0), Inches(4.6), C_WHITE, C_PURPLE, Pt(1.5))
+    add_rect(slide, Inches(0.4), Inches(2.5), Inches(6.0), Inches(0.55), C_PURPLE)
+    add_text(slide, "API 设计（FastAPI）", Inches(0.55), Inches(2.56), Inches(5.7), Inches(0.42),
+             font_size=13, bold=True, color=C_WHITE)
+
+    api_items = [
+        ("POST /api/analyze", "接收 { images: [base64], text: string }，返回风险报告"),
+        ("请求示例", '{ "images": ["base64..."], "text": "宝宝今天在公园玩得很开心！" }'),
+        ("响应结构", '{ risks: [{ category, level, description, suggestion }] }'),
+        ("错误处理", "图片超限 / API 超时 / 格式错误均有友好提示"),
+    ]
+    y = Inches(3.15)
+    for title, desc in api_items:
+        add_rect(slide, Inches(0.55), y, Inches(5.7), Inches(0.95), C_LIGHT)
+        add_text(slide, title, Inches(0.7), y + Inches(0.1), Inches(5.4), Inches(0.35),
+                 font_size=11, bold=True, color=C_PURPLE)
+        add_text(slide, desc, Inches(0.7), y + Inches(0.45), Inches(5.4), Inches(0.45),
+                 font_size=10, color=C_DARK)
+        y += Inches(1.02)
+
+    # 风险检测 prompt
+    add_rect(slide, Inches(6.7), Inches(2.5), Inches(6.2), Inches(4.6), C_WHITE, C_AMBER, Pt(1.5))
+    add_rect(slide, Inches(6.7), Inches(2.5), Inches(6.2), Inches(0.55), C_AMBER)
+    add_text(slide, "AI 风险检测 Prompt（核心逻辑）", Inches(6.85), Inches(2.56), Inches(5.9), Inches(0.42),
+             font_size=13, bold=True, color=C_WHITE)
+
+    prompt_items = [
+        ("System Prompt", "你是一个儿童隐私安全专家，参考 Imago Obscura 的 5 类风险框架，对用户内容进行隐私风险分析..."),
+        ("R1 检测", "孩子外貌、姓名、年龄、学校等可识别信息"),
+        ("R2 检测", "家庭住址、地理位置、旅游行程等背景信息"),
+        ("R3 检测", "危险行为、不安全场景、过度暴露身体等"),
+        ("R4 检测", "EXIF 地理位置、时间戳、GPS 等元数据"),
+        ("R5 检测", "内容被二次传播或滥用的可能性评估"),
+    ]
+    y = Inches(3.15)
+    for label, desc in prompt_items:
+        add_rect(slide, Inches(6.8), y, Inches(6.0), Inches(0.68), C_LIGHT)
+        add_text(slide, label, Inches(6.95), y + Inches(0.08), Inches(1.5), Inches(0.3),
+                 font_size=10, bold=True, color=C_AMBER)
+        add_text(slide, desc, Inches(8.45), y + Inches(0.08), Inches(4.2), Inches(0.55),
+                 font_size=10, color=C_DARK)
+        y += Inches(0.74)
+
+    return slide
+
+
+# ================================================================
 def slide_next_steps(prs):
     slide = bg(prs, C_BG)
     """下一步计划"""
@@ -896,6 +1153,10 @@ def main():
     slide_vlm_detail(prs)
     slide_risks_for_children(prs)
     slide_project_rq(prs)
+    slide_mvp_overview(prs)
+    slide_mvp_upload(prs)
+    slide_mvp_report(prs)
+    slide_mvp_tech(prs)
     slide_next_steps(prs)
 
     out = "/Users/sunxiaoxuan/Desktop/FutureChildPosting_Research.pptx"
