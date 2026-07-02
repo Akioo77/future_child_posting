@@ -892,7 +892,7 @@ def slide_mvp_upload(prs):
              font_size=13, bold=True, color=C_WHITE)
 
     features = [
-        ("📷 图片上传区", "支持拖拽或点击上传最多 9 张图片，显示缩略图预览，提示文件大小和格式限制"),
+        ("📷 图片上传区", "点击上传最多 9 张图片（暂不支持拖拽），显示缩略图预览，提示文件大小和格式限制"),
         ("📝 文字输入框", "用户输入准备发布的内容描述或分享意图，支持多行文本输入"),
         ("🚀 一键分析", "点击「开始分析」按钮，触发 AI 风险扫描，显示加载动画"),
         ("⏳ 等待过程", "实时显示分析进度和状态，给出预估时间提示"),
@@ -916,7 +916,7 @@ def slide_mvp_upload(prs):
         ("无压力设计", "用户可以随时修改图片或文字，多次提交分析而不产生实际发布行为"),
         ("隐私保护", "图片仅在分析过程中使用，不会持久化存储，消除用户隐私顾虑"),
         ("渐进式引导", "为首次使用的家长提供操作提示，降低使用门槛"),
-        ("多图协同", "多张图片之间可标注关联（如「左图是孩子，右图是家庭成员」），帮助 AI 理解场景"),
+        ("多图协同", "多图联合分析，综合判断各图之间的关联性和整体隐私风险"),
     ]
     y = Inches(1.65)
     for title, desc in details:
@@ -978,15 +978,15 @@ def slide_mvp_report(prs):
                  font_size=11, color=C_DARK)
         y += Inches(0.4)
 
-    # AI改写说明
+    # AI建议说明
     add_rect(slide, Inches(8.2), Inches(4.85), Inches(4.7), Inches(2.3), C_WHITE, C_TEAL, Pt(1.5))
     add_rect(slide, Inches(8.2), Inches(4.85), Inches(4.7), Inches(0.5), C_TEAL)
-    add_text(slide, "AI 文案改写功能", Inches(8.35), Inches(4.9), Inches(4.4), Inches(0.42),
+    add_text(slide, "AI 脱敏建议（当前实现）", Inches(8.35), Inches(4.9), Inches(4.4), Inches(0.42),
              font_size=12, bold=True, color=C_WHITE)
     rewrite = [
-        "• 「生成安全文案」：AI 输出一整段脱敏后的替代文案",
-        "• 保留原意，过滤可识别信息",
-        "• 用户可直接复制使用，或继续调整",
+        "• 每条风险配有针对性的修改建议",
+        "• 说明「为什么会检测出该风险」",
+        "• 后续可扩展：一键生成脱敏文案（待开发）",
     ]
     y = Inches(5.45)
     for item in rewrite:
