@@ -15,7 +15,7 @@
 ## 🏗️ 系统架构
 
 ```
-前端 (Next.js :3000)  ←→  后端 (FastAPI :8000)  ←→  Minimax VL API
+前端 (Next.js :3000)  ←→  后端 (FastAPI :8000)  ←→  阿里云百炼（qwen3.6-plus）
 ```
 
 ---
