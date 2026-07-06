@@ -57,7 +57,9 @@ SYSTEM_PROMPT = f"""你是一个专业的儿童隐私安全分析助手。
       "type": "风险类型中文名",
       "level": "H" | "M" | "L",
       "description": "具体描述",
-      "source": "image0" | "image1" | ... | "text" | "both"
+      "source": "image0" | "image1" | ... | "text" | "both",
+      "image_index": 0 | 1 | ... | null,
+      "bbox": [x_percent, y_percent, width_percent, height_percent] | null
     }}
   ],
   "suggestions": [
@@ -70,6 +72,8 @@ SYSTEM_PROMPT = f"""你是一个专业的儿童隐私安全分析助手。
 - suggestions 数组：针对每个检测到的风险给出修改建议，如果没有风险则返回空数组 []
 - level: H=高风险（直接可定位/识别身份），M=中风险（可能暴露信息），L=低风险（轻微隐私提示）
 - source: 风险来自哪张图片(image0-8)、文字(text)还是两者结合(both)
+- image_index: 仅图片来源风险填写（0=第一张，1=第二张...），纯文字来源填 null
+- bbox: 仅图片可见风险填写，表示风险区域占图片的百分比坐标 [x%, y%, width%, height%]，左上角为原点，范围 0-100；纯文字来源填 null
 - 如果所有图片和文字均无明显风险，risks 和 suggestions 均返回空数组 []
 
 ## 重要注意事项

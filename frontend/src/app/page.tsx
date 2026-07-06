@@ -13,6 +13,8 @@ interface RiskItem {
   level: string;
   description: string;
   source: string;
+  image_index: number | null;
+  bbox: [number, number, number, number] | null;
 }
 
 interface SuggestionItem {
@@ -190,7 +192,13 @@ export default function Home() {
         </div>
 
         {/* 风险报告 */}
-        {result && <RiskReport risks={result.risks} suggestions={result.suggestions} />}
+        {result && (
+          <RiskReport
+            risks={result.risks}
+            suggestions={result.suggestions}
+            images={images.map((img) => img.dataUrl)}
+          />
+        )}
       </div>
     </main>
   );

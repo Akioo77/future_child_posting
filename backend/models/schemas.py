@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 
 
 class AnalyzeRequest(BaseModel):
@@ -18,6 +18,14 @@ class RiskItem(BaseModel):
     level: str = Field(..., description="风险等级：H(高)/M(中)/L(低)")
     description: str = Field(..., description="具体描述")
     source: str = Field(..., description="来源：image0-8 / text / both")
+    image_index: Optional[int] = Field(
+        default=None,
+        description="风险来自哪张图片（0-based），纯文字风险时为 null"
+    )
+    bbox: Optional[List[float]] = Field(
+        default=None,
+        description="风险区域坐标 [x_percent, y_percent, width_percent, height_percent]，0-100，仅图片风险有"
+    )
 
 
 class SuggestionItem(BaseModel):
