@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import UploadPanel from "@/components/UploadPanel";
 import TextInput from "@/components/TextInput";
 import RiskReport from "@/components/RiskReport";
@@ -11,6 +11,33 @@ import imageCompression from "browser-image-compression";
 
 // API 基础地址：默认相对路径（同源走 Nginx 反代）；可用 NEXT_PUBLIC_API_URL 覆盖
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
+
+// 客户端日志上报：把浏览器错误发到后端，便于排查
+function reportClientLog(level: string, message: string, extra?: any) {
+  try {
+    const body = JSON.stringify({
+      level,
+      message,
+      url: window.location.href,
+      ua: navigator.userAgent,
+      extra,
+      timestamp: new Date().toISOString(),
+    });
+    // navigator.sendBeacon 最可靠（页面关闭也能发）
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon("/api/client-log", body);
+    } else {
+      fetch("/api/client-log", {
+        method: "POST",
+        body,
+        headers: { "Content-Type": "application/json" },
+        keepalive: true,
+      }).catch(() => {});
+    }
+  } catch {
+    // 静默失败
+  }
+}
 
 /* ── 页面组件 ──────────────────────────────── */
 export default function Home() {
@@ -24,6 +51,23 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const MAX_IMAGES = 9;
+
+  // 全局错误捕获（生产环境调试用）
+  useEffect(() => {
+    const onError = (event: ErrorEvent) => {
+      reportClientLog("error", event.message, { filename: event.filename, lineno: event.lineno });
+    };
+    const onRejection = (event: PromiseRejectionEvent) => {
+      const reason = event.reason?.message || String(event.reason);
+      reportClientLog("unhandledrejection", reason);
+    };
+    window.addEventListener("error", onError);
+    window.addEventListener("unhandledrejection", onRejection);
+    return () => {
+      window.removeEventListener("error", onError);
+      window.removeEventListener("unhandledrejection", onRejection);
+    };
+  }, []);
 
   /* ── 处理图片选择 ──────────────────────────── */
   const handleImagesChange = useCallback((files: File[]) => {
@@ -92,6 +136,8 @@ export default function Home() {
         fileType: "image/jpeg" as const,
       };
 
+      reportClientLog("info", "analyze:start", { imageCount: images.length, textLen: text.length });
+
       const compressedDataUrls = await Promise.all(
         images.map(async (img) => {
           if (img.file.size < 1024 * 1024) return img.dataUrl;
@@ -102,16 +148,27 @@ export default function Home() {
 
       setCompressing(false);
 
+      reportClientLog("info", "analyze:request-send", { url: `${API_BASE_URL}/api/analyze` });
+
       const response = await axios.post(`${API_BASE_URL}/api/analyze`, {
         images: compressedDataUrls,
         text,
       }, {
         timeout: 130000, // 后端 120s 超时，前端留 10s 余量
       });
+      reportClientLog("info", "analyze:response-ok", { status: response.status, risks: response.data?.risks?.length });
       setResult(response.data);
       setHasAnalyzed(true);
     } catch (err: any) {
       setCompressing(false);
+      // 关键：把错误详细信息上报到服务器
+      reportClientLog("error", "analyze:failed", {
+        message: err.message,
+        code: err.code,
+        status: err.response?.status,
+        responseData: err.response?.data,
+        requestUrl: `${API_BASE_URL}/api/analyze`,
+      });
       const detail = err.response?.data?.detail || err.message;
       setError(`分析失败: ${detail}`);
     } finally {

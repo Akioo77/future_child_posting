@@ -7,7 +7,7 @@ import httpx
 import json
 import logging
 import time
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from backend.models.schemas import (
     AnalyzeRequest,
     AnalyzeResponse,
@@ -37,6 +37,26 @@ def validate_image(b64_str: str) -> None:
 
 @router.post("/analyze", response_model=AnalyzeResponse)
 async def analyze(request: AnalyzeRequest):
+    """分析多张图片和文字中的儿童隐私风险"""
+
+
+@router.post("/client-log")
+async def client_log(request: Request):
+    """接收前端浏览器错误上报（用于生产环境调试）"""
+    try:
+        body = await request.body()
+        log_data = json.loads(body) if body else {}
+        logger.info(
+            "[CLIENT] level=%s msg=%s | url=%s | extra=%s",
+            log_data.get("level", "?"),
+            log_data.get("message", "?")[:200],
+            log_data.get("url", "?")[:100],
+            json.dumps(log_data.get("extra", {}), ensure_ascii=False)[:500],
+        )
+        return {"ok": True}
+    except Exception as e:
+        logger.error("[CLIENT] log parse failed: %s", e)
+        return {"ok": False}
     """分析多张图片和文字中的儿童隐私风险"""
 
     num_images = len(request.images)
