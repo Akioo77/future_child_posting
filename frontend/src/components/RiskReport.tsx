@@ -21,10 +21,10 @@ interface Props {
 }
 
 /* ── 常量 ──────────────────────────────── */
-const LEVEL_STYLE: Record<string, { bg: string; badge: string; boxColor: string }> = {
-  H: { bg: "bg-red-50", badge: "bg-red-500", boxColor: "border-red-500" },
-  M: { bg: "bg-amber-50", badge: "bg-amber-500", boxColor: "border-orange-400" },
-  L: { bg: "bg-blue-50", badge: "bg-blue-500", boxColor: "border-blue-400" },
+const LEVEL_STYLE: Record<string, { bg: string; badge: string; boxColor: string; color: string }> = {
+  H: { bg: "bg-red-50", badge: "bg-red-500", boxColor: "border-red-500", color: "#ef4444" },
+  M: { bg: "bg-amber-50", badge: "bg-amber-500", boxColor: "border-orange-400", color: "#f97316" },
+  L: { bg: "bg-blue-50", badge: "bg-blue-500", boxColor: "border-blue-400", color: "#3b82f6" },
 };
 
 const LEVEL_LABEL: Record<string, string> = { H: "高", M: "中", L: "低" };
@@ -121,12 +121,18 @@ export default function RiskReport({ risks, suggestions, images }: Props) {
                       >
                         {/* 边框 */}
                         <div
-                          className={`w-full h-full border-2 ${rStyle.boxColor} bg-${rStyle.badge}/10 rounded-sm`}
-                          style={{ backgroundColor: `${rStyle.badge}22` }}
+                          className="w-full h-full border-2 rounded-sm"
+                          style={{
+                            borderColor: rStyle.color,
+                            backgroundColor: rStyle.color + "22",
+                          }}
                         />
                         {/* 悬停标签 */}
                         <div className="absolute left-0 top-0 -translate-y-full mb-1 hidden group-hover:block z-10 whitespace-nowrap">
-                          <div className={`${rStyle.badge} text-white text-xs px-2 py-0.5 rounded-t-md font-bold shadow-lg`}>
+                          <div
+                            className="text-white text-xs px-2 py-0.5 rounded-t-md font-bold shadow-lg"
+                            style={{ backgroundColor: rStyle.color }}
+                          >
                             {LEVEL_LABEL[risk.level] || risk.level} · {risk.type}
                           </div>
                         </div>
