@@ -148,6 +148,11 @@ export default function RiskReport({ risks, suggestions, images }: Props) {
                   </p>
                   {imgRisks.map((risk, ri) => {
                     const rStyle = LEVEL_STYLE[risk.level] || LEVEL_STYLE["M"];
+                    const sourceLabel = risk.source.startsWith("image")
+                      ? "图片来源"
+                      : risk.source === "both" ? "图文结合"
+                      : risk.source === "text" ? "文字来源"
+                      : risk.source;
                     return (
                       <div key={ri} className="flex items-start gap-2 text-sm">
                         <span className={`${rStyle.badge} text-white text-xs px-1.5 py-0.5 rounded-full font-bold mt-0.5 shrink-0`}>
@@ -155,6 +160,7 @@ export default function RiskReport({ risks, suggestions, images }: Props) {
                         </span>
                         <div>
                           <span className="font-semibold text-gray-700">[{risk.id}] {risk.type}</span>
+                          <span className="text-gray-400"> · {sourceLabel}</span>
                           <span className="text-gray-500"> — {risk.description}</span>
                         </div>
                       </div>
