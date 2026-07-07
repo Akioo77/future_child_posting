@@ -46,14 +46,14 @@ export default function UploadPanel({
       {images.length > 0 ? (
         <div className="space-y-3">
           {/* 图片预览网格 */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {images.map((img, i) => (
               <div key={i} className="relative group">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={img.dataUrl}
                   alt={`图片 ${i + 1}`}
-                  className="w-full h-20 object-cover rounded-lg border border-gray-200"
+                  className="w-full h-16 sm:h-20 object-cover rounded-lg border border-gray-200"
                 />
                 {/* 序号 */}
                 <span className="absolute top-1 left-1 bg-black/50 text-white text-xs px-1.5 rounded-full">
@@ -71,7 +71,7 @@ export default function UploadPanel({
 
             {/* 添加按钮（还有空位时） */}
             {images.length < maxImages && (
-              <label className="h-20 border-2 border-dashed border-primary-light rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary-light/20 transition-all">
+              <label className="h-16 sm:h-20 border-2 border-dashed border-primary-light rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary-light/20 transition-all">
                 <span className="text-lg">+</span>
                 <span className="text-xs text-gray-400">添加</span>
                 <input
@@ -109,8 +109,8 @@ export default function UploadPanel({
         </div>
       ) : (
         /* 空状态：上传区域 */
-        <label className="flex flex-col items-center justify-center border-2 border-dashed border-primary-light rounded-xl cursor-pointer hover:border-primary hover:bg-primary-light/20 transition-all py-16">
-          <span className="text-4xl mb-3">🖼️</span>
+        <label className="flex flex-col items-center justify-center border-2 border-dashed border-primary-light rounded-xl cursor-pointer hover:border-primary hover:bg-primary-light/20 transition-all py-10 sm:py-16">
+          <span className="text-3xl sm:text-4xl mb-2 sm:mb-3">🖼️</span>
           <span className="text-sm text-gray-500 font-medium">点击选择图片</span>
           <span className="text-xs text-gray-400 mt-1">支持 JPG/PNG，每张最大 10MB</span>
           <span className="text-xs text-gray-400 mt-0.5">最多 {maxImages} 张图片</span>

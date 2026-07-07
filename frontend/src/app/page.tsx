@@ -4,27 +4,13 @@ import { useState, useRef, useCallback } from "react";
 import UploadPanel from "@/components/UploadPanel";
 import TextInput from "@/components/TextInput";
 import RiskReport from "@/components/RiskReport";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import type { AnalysisResult } from "@/types";
 import axios from "axios";
+import imageCompression from "browser-image-compression";
 
-/* ── 类型定义 ──────────────────────────────── */
-interface RiskItem {
-  id: string;
-  type: string;
-  level: string;
-  description: string;
-  source: string;
-  image_index: number | null;
-  bbox: [number, number, number, number] | null;
-}
-
-interface SuggestionItem {
-  text: string;
-}
-
-interface AnalysisResult {
-  risks: RiskItem[];
-  suggestions: SuggestionItem[];
-}
+// API 基础地址：优先用环境变量，回退到 localhost:8000（开发环境）
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 /* ── 页面组件 ──────────────────────────────── */
 export default function Home() {
@@ -32,6 +18,7 @@ export default function Home() {
   const [text, setText] = useState("");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [compressing, setCompressing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -95,15 +82,36 @@ export default function Home() {
     setLoading(true);
     setError(null);
     setResult(null);
+    setCompressing(true);
 
     try {
-      const response = await axios.post("http://localhost:8000/api/analyze", {
-        images: images.map((img) => img.dataUrl),
+      const compressOptions = {
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+        maxFileSize: 2 * 1024 * 1024,
+        fileType: "image/jpeg" as const,
+      };
+
+      const compressedDataUrls = await Promise.all(
+        images.map(async (img) => {
+          if (img.file.size < 1024 * 1024) return img.dataUrl;
+          const compressed = await imageCompression(img.file, compressOptions);
+          return await imageCompression.getDataUrlFromFile(compressed);
+        })
+      );
+
+      setCompressing(false);
+
+      const response = await axios.post(`${API_BASE_URL}/api/analyze`, {
+        images: compressedDataUrls,
         text,
+      }, {
+        timeout: 130000, // 后端 120s 超时，前端留 10s 余量
       });
       setResult(response.data);
       setHasAnalyzed(true);
     } catch (err: any) {
+      setCompressing(false);
       const detail = err.response?.data?.detail || err.message;
       setError(`分析失败: ${detail}`);
     } finally {
@@ -172,14 +180,14 @@ export default function Home() {
         <div className="flex gap-4 justify-center">
           <button
             onClick={handleAnalyze}
-            disabled={images.length === 0 || loading}
+            disabled={images.length === 0 || loading || compressing}
             className={`px-8 py-3 rounded-lg font-semibold text-white transition-all ${
               images.length === 0 || loading
                 ? "bg-gray-300 cursor-not-allowed"
                 : "bg-accent-pink hover:bg-pink-700 shadow-md hover:shadow-lg"
             }`}
           >
-            {loading ? "🔍 分析中..." : `🔍 开始分析${images.length > 0 ? `（${images.length} 张）` : ""}`}
+            {compressing ? "📦 压缩图片中..." : loading ? "🔍 分析中..." : images.length > 0 ? `🔍 开始分析（${images.length} 张）` : "🔍 开始分析"}
           </button>
           {hasAnalyzed && (
             <button
@@ -193,11 +201,14 @@ export default function Home() {
 
         {/* 风险报告 */}
         {result && (
-          <RiskReport
-            risks={result.risks}
-            suggestions={result.suggestions}
-            images={images.map((img) => img.dataUrl)}
-          />
+          <ErrorBoundary>
+            <RiskReport
+              risks={result.risks}
+              suggestions={result.suggestions}
+              images={images.map((img) => img.dataUrl)}
+              text_suggestions={result.text_suggestions}
+            />
+          </ErrorBoundary>
         )}
       </div>
     </main>
