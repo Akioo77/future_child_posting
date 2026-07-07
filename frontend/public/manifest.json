@@ -1,0 +1,9 @@
+{
+  "name": "Future Child Posting",
+  "short_name": "FCP",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#6B4C9A",
+  "background_color": "#F9F6FB",
+  "icons": [{"src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml"}]
+}
