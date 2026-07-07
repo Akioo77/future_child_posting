@@ -38,11 +38,15 @@ def validate_image(b64_str: str) -> None:
 async def analyze(request: AnalyzeRequest):
     """分析多张图片和文字中的儿童隐私风险"""
 
+    num_images = len(request.images)
+    text_preview = request.text[:50] + "..." if len(request.text) > 50 else request.text
+    logger.info("[REQUEST] images=%d, text='%s'", num_images, text_preview)
+
     # 1. 校验数量
-    if len(request.images) > MAX_IMAGES:
+    if num_images > MAX_IMAGES:
         raise HTTPException(status_code=400, detail=f"最多上传 {MAX_IMAGES} 张图片")
 
-    if len(request.images) == 0:
+    if num_images == 0:
         raise HTTPException(status_code=400, detail="请至少上传一张图片")
 
     # 2. 校验每张图片大小
@@ -55,10 +59,39 @@ async def analyze(request: AnalyzeRequest):
     # 3. 调用 AI 分析，区分错误类型给前端更明确的反馈
     try:
         result = await analyze_content(request.images, request.text)
+        # 详细记录每个 risk 的关键字段（id/level/source/image_index/bbox）
+        risks_summary = [
+            {
+                "id": r.id,
+                "level": r.level,
+                "source": r.source,
+                "image_index": r.image_index,
+                "bbox": r.bbox,
+            }
+            for r in result["risks"]
+        ]
         logger.info(
-            "[ANALYZE] risks=%d, suggestions=%d, text_suggestions=%d",
-            len(result["risks"]), len(result["suggestions"]), len(result["text_suggestions"]),
+            "[ANALYZE] risks=%d, suggestions=%d, text_suggestions=%d | risks_detail=%s",
+            len(result["risks"]),
+            len(result["suggestions"]),
+            len(result["text_suggestions"]),
+            json.dumps(risks_summary, ensure_ascii=False),
         )
+        # 检查是否有"图片风险但 bbox 为 null"的情况（用户报告的核心问题）
+        image_risks_no_bbox = [
+            r for r in result["risks"]
+            if r.source.startswith("image") and r.bbox is None
+        ]
+        if image_risks_no_bbox:
+            logger.warning(
+                "[ANALYZE] ⚠️ 发现 %d 个图片风险未返回 bbox：%s",
+                len(image_risks_no_bbox),
+                json.dumps(
+                    [{"id": r.id, "type": r.type, "image_index": r.image_index,
+                      "description": r.description[:80]} for r in image_risks_no_bbox],
+                    ensure_ascii=False,
+                ),
+            )
         return AnalyzeResponse(**result)
     except httpx.TimeoutException as e:
         logger.error("[ANALYZE] AI API 超时: %s", e)

@@ -2,10 +2,20 @@
 Future Child Posting — FastAPI 后端入口
 """
 
+import logging
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routers import analyze
+
+# ── 日志配置 ───────────────────────────────────────
+# INFO 级别，输出到 stdout（便于 docker/k8s 收集）
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger("fcp")
 
 app = FastAPI(
     title="Future Child Posting API",
