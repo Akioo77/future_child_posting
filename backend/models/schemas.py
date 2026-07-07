@@ -22,9 +22,10 @@ class RiskItem(BaseModel):
         default=None,
         description="风险来自哪张图片（0-based），纯文字风险时为 null"
     )
-    bbox: Optional[List[float]] = Field(
+    # bbox 可能为 null（纯文字风险）或包含 null（AI 异常返回）
+    bbox: Optional[List[Optional[float]]] = Field(
         default=None,
-        description="风险区域坐标 [x_percent, y_percent, width_percent, height_percent]，0-100，仅图片风险有"
+        description="风险区域坐标 [x_percent, y_percent, width_percent, height_percent]，0-100，仅图片风险有；数组内允许 null（AI 异常时）"
     )
 
 

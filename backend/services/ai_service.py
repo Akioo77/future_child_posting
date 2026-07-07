@@ -336,8 +336,16 @@ def _parse_ai_response(raw_text: str) -> dict:
         else:
             raise ValueError(f"无法解析模型返回内容: {raw_text[:500]}")
 
-    # 规范化返回
-    risks = [RiskItem(**r) for r in parsed.get("risks", [])]
+    # 规范化返回 — 容错处理 AI 返回的异常格式
+    risks = []
+    for r in parsed.get("risks", []):
+        # 如果 bbox 是包含 null 的列表，视为无效，整条 bbox 设为 None
+        if r.get("bbox") is not None and any(v is None for v in r["bbox"]):
+            r["bbox"] = None
+        # 如果 bbox 长度不对，丢弃
+        if r.get("bbox") is not None and len(r["bbox"]) != 4:
+            r["bbox"] = None
+        risks.append(RiskItem(**r))
     suggestions = [SuggestionItem(**s) for s in parsed.get("suggestions", [])]
     text_suggestions = [TextSuggestionItem(**t) for t in parsed.get("text_suggestions", [])]
 

@@ -80,6 +80,22 @@ class TestParseMissingFields:
         assert result["risks"][0].image_index is None
         assert result["risks"][0].bbox is None
 
+    def test_bbox_with_null_values_normalized_to_none(self):
+        """AI 偶尔返回 [null, null, null, null] —— 应规范化为 None"""
+        raw = '{"risks": [{"id": "R1", "type": "x", "level": "M", "description": "y", "source": "image0", "image_index": 0, "bbox": [null, null, null, null]}], "suggestions": [], "text_suggestions": []}'
+        result = _parse_ai_response(raw)
+        assert result["risks"][0].bbox is None
+
+    def test_bbox_with_partial_nulls_normalized_to_none(self):
+        raw = '{"risks": [{"id": "R1", "type": "x", "level": "M", "description": "y", "source": "image0", "image_index": 0, "bbox": [10, null, 20, 30]}], "suggestions": [], "text_suggestions": []}'
+        result = _parse_ai_response(raw)
+        assert result["risks"][0].bbox is None
+
+    def test_bbox_wrong_length_normalized_to_none(self):
+        raw = '{"risks": [{"id": "R1", "type": "x", "level": "M", "description": "y", "source": "image0", "image_index": 0, "bbox": [1, 2, 3]}], "suggestions": [], "text_suggestions": []}'
+        result = _parse_ai_response(raw)
+        assert result["risks"][0].bbox is None
+
     def test_missing_text_suggestions(self):
         raw = '{"risks": [], "suggestions": []}'
         result = _parse_ai_response(raw)
