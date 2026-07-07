@@ -33,10 +33,21 @@ class SuggestionItem(BaseModel):
     text: str = Field(..., description="建议内容")
 
 
+class TextSuggestionItem(BaseModel):
+    """文案优化建议：原文 → 修改后"""
+    original: str = Field(..., description="原文中有风险的部分")
+    revised: str = Field(..., description="修改后的安全版本")
+    reason: str = Field(..., description="修改原因")
+
+
 class AnalyzeResponse(BaseModel):
     """分析响应"""
     risks: List[RiskItem] = Field(default_factory=list, description="检测到的风险列表")
     suggestions: List[SuggestionItem] = Field(default_factory=list, description="修改建议列表")
+    text_suggestions: List[TextSuggestionItem] = Field(
+        default_factory=list,
+        description="文案优化建议列表（原文→改后文），仅当检测到文案隐私风险时返回"
+    )
 
 
 class ErrorResponse(BaseModel):

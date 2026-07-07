@@ -7,12 +7,12 @@ API：OpenAI 兼容端点 https://dashscope.aliyuncs.com/compatible-mode/v1
 import json
 import os
 import httpx
-from backend.models.schemas import RiskItem, SuggestionItem
+from backend.models.schemas import RiskItem, SuggestionItem, TextSuggestionItem
 
 # ── 配置 ──────────────────────────────────────────────
 DASHSCOPE_API_KEY = os.environ.get("DASHSCOPE_API_KEY", "")
-DASHSCOPE_API_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-MODEL_NAME = "qwen3.6-plus"  # 支持图片+文字，request_modality: Image+Text+Video
+DASHSCOPE_BASE_URL = os.environ.get("DASHSCOPE_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1")
+MODEL_NAME = os.environ.get("DASHSCOPE_MODEL_NAME", "kimi-k2.5")  # 支持图片+文字，响应快
 
 # ── 风险定义（来自 Imago Obscura）────────────────────────
 RISK_DEFINITIONS = """
@@ -64,15 +64,26 @@ SYSTEM_PROMPT = f"""你是一个专业的儿童隐私安全分析助手。
   ],
   "suggestions": [
     {{"text": "针对该风险的修改建议"}}
+  ],
+  "text_suggestions": [
+    {{
+      "original": "原文中有隐私风险的具体语句",
+      "revised": "修改后的安全版本",
+      "reason": "修改原因（简述）"
+    }}
   ]
 }}
 
 ## 判断规则
 - risks 数组：如果没有检测到任何风险，返回空数组 []
 - suggestions 数组：针对每个检测到的风险给出修改建议，如果没有风险则返回空数组 []
+- text_suggestions 数组：**始终返回**。即使没有隐私风险，也应对文字进行隐私保护评分和优化建议：
+  - 如果文字本身安全且已做隐私保护（如用了"XX小学"等模糊表达），给出积极评价和可选的进一步优化建议
+  - 如果文字有隐私风险，给出修改建议（同上）
+  - 如果用户未输入文字，返回空数组 []
 - level: H=高风险（直接可定位/识别身份），M=中风险（可能暴露信息），L=低风险（轻微隐私提示）
 - source: 风险来自哪张图片(image0-8)、文字(text)还是两者结合(both)
-- image_index: 仅图片来源风险填写（0=第一张，1=第二张...），纯文字来源填 null
+- image_index: 图片来源风险必填（0=第一张，1=第二张...）；跨图综合分析填 source=both 且 image_index=主图索引（0或1），这样可以在对应图片上显示标注；纯文字来源填 null
 - bbox: **每个**图片来源的风险都必须返回自己的 bbox（独立标注区域），不要多风险共用同一个 bbox；纯文字来源填 null
 - **bbox 精度要求**：只标注风险覆盖的实际区域，不要把整张图或无关区域也框进去；左上角为原点，范围 0-100 的百分比；如果无法精确框出，返回 null
 - 如果所有图片和文字均无明显风险，risks 和 suggestions 均返回空数组 []
@@ -158,7 +169,7 @@ async def analyze_content(images_b64: list, text: str) -> dict:
 
     async with httpx.AsyncClient(timeout=120.0) as client:
         response = await client.post(
-            f"{DASHSCOPE_API_URL}/chat/completions",
+            f"{DASHSCOPE_BASE_URL}/chat/completions",
             headers=headers,
             json=payload
         )
@@ -191,8 +202,10 @@ async def analyze_content(images_b64: list, text: str) -> dict:
     # 规范化返回
     risks = [RiskItem(**r) for r in parsed.get("risks", [])]
     suggestions = [SuggestionItem(**s) for s in parsed.get("suggestions", [])]
+    text_suggestions = [TextSuggestionItem(**t) for t in parsed.get("text_suggestions", [])]
 
     return {
         "risks": risks,
-        "suggestions": suggestions
+        "suggestions": suggestions,
+        "text_suggestions": text_suggestions,
     }

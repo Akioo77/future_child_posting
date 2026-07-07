@@ -3,12 +3,17 @@
 """
 
 import base64
+import httpx
+import json
+import logging
 from fastapi import APIRouter, HTTPException
 from backend.models.schemas import (
     AnalyzeRequest,
     AnalyzeResponse,
 )
 from backend.services.ai_service import analyze_content
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -47,9 +52,27 @@ async def analyze(request: AnalyzeRequest):
         except ValueError as e:
             raise HTTPException(status_code=400, detail=f"第 {i+1} 张图片: {e}")
 
-    # 3. 调用 AI 分析
+    # 3. 调用 AI 分析，区分错误类型给前端更明确的反馈
     try:
         result = await analyze_content(request.images, request.text)
+        logger.info(
+            "[ANALYZE] risks=%d, suggestions=%d, text_suggestions=%d",
+            len(result["risks"]), len(result["suggestions"]), len(result["text_suggestions"]),
+        )
         return AnalyzeResponse(**result)
+    except httpx.TimeoutException as e:
+        logger.error("[ANALYZE] AI API 超时: %s", e)
+        raise HTTPException(status_code=504, detail=f"AI 服务响应超时，请稍后重试: {e}")
+    except httpx.HTTPStatusError as e:
+        logger.error("[ANALYZE] AI API HTTP %d: %s", e.response.status_code, e.response.text[:200])
+        raise HTTPException(
+            status_code=502,
+            detail=f"AI 服务返回错误 ({e.response.status_code}): {e.response.text[:200]}",
+        )
+    except ValueError as e:
+        # JSON 解析失败等
+        logger.error("[ANALYZE] 解析失败: %s", e)
+        raise HTTPException(status_code=502, detail=f"AI 返回内容无法解析: {e}")
     except Exception as e:
+        logger.exception("[ANALYZE] 未预期错误")
         raise HTTPException(status_code=500, detail=f"AI 分析失败: {e}")
