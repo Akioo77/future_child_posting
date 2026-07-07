@@ -9,8 +9,8 @@ import type { AnalysisResult } from "@/types";
 import axios from "axios";
 import imageCompression from "browser-image-compression";
 
-// API 基础地址：优先用环境变量，回退到 localhost:8000（开发环境）
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// API 基础地址：默认相对路径（同源走 Nginx 反代）；可用 NEXT_PUBLIC_API_URL 覆盖
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 /* ── 页面组件 ──────────────────────────────── */
 export default function Home() {
