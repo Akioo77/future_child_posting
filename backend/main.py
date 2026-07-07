@@ -2,6 +2,7 @@
 Future Child Posting — FastAPI 后端入口
 """
 
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routers import analyze
@@ -12,13 +13,26 @@ app = FastAPI(
     description="AI 辅助家长识别社交媒体分享儿童内容的隐私风险",
 )
 
-# CORS：允许前端开发服务器访问
+# CORS 配置：优先用环境变量 CORS_ALLOWED_ORIGINS（逗号分隔），
+# 回退到开发环境配置（localhost + 127.0.0.1 多端口）
+_default_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+_allowed_origins_env = os.environ.get("CORS_ALLOWED_ORIGINS", "")
+if _allowed_origins_env:
+    _allowed_origins = [o.strip() for o in _allowed_origins_env.split(",") if o.strip()]
+else:
+    _allowed_origins = _default_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 开发环境，生产环境应限制具体域名
+    allow_origins=_allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # 路由
