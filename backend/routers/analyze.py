@@ -6,6 +6,7 @@ import base64
 import httpx
 import json
 import logging
+import time
 from fastapi import APIRouter, HTTPException
 from backend.models.schemas import (
     AnalyzeRequest,
@@ -58,7 +59,10 @@ async def analyze(request: AnalyzeRequest):
 
     # 3. 调用 AI 分析，区分错误类型给前端更明确的反馈
     try:
+        ai_start = time.time()
         result = await analyze_content(request.images, request.text)
+        ai_elapsed_ms = (time.time() - ai_start) * 1000
+
         # 详细记录每个 risk 的关键字段（id/level/source/image_index/bbox）
         risks_summary = [
             {
@@ -71,7 +75,8 @@ async def analyze(request: AnalyzeRequest):
             for r in result["risks"]
         ]
         logger.info(
-            "[ANALYZE] risks=%d, suggestions=%d, text_suggestions=%d | risks_detail=%s",
+            "[ANALYZE] ai=%.0fms | risks=%d, suggestions=%d, text_suggestions=%d | risks_detail=%s",
+            ai_elapsed_ms,
             len(result["risks"]),
             len(result["suggestions"]),
             len(result["text_suggestions"]),

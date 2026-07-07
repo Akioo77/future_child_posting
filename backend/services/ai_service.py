@@ -305,7 +305,21 @@ async def analyze_content(images_b64: list, text: str) -> dict:
         raise ValueError(f"API 返回格式异常：{result}")
 
     raw_text = choices[0].get("message", {}).get("content", "").strip()
+    return _parse_ai_response(raw_text)
 
+
+def _parse_ai_response(raw_text: str) -> dict:
+    """解析 AI 返回的 JSON 文本，处理各种异常格式。
+
+    Args:
+        raw_text: AI 返回的原始文本
+
+    Returns:
+        dict，符合 AnalyzeResponse 结构
+
+    Raises:
+        ValueError: 无法解析时
+    """
     # 提取 JSON（可能有 markdown 包装）
     if raw_text.startswith("```"):
         lines = raw_text.split("\n")
