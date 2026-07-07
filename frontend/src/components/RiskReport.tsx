@@ -112,9 +112,14 @@ function ImageRiskBox({ imgSrc, imgIdx, risks, activeRiskIdx, onRiskClick }: Ima
 
         {/* bbox 标注层 */}
         {renderRect && imgRef.current && risks.map((risk, ri) => {
-          if (!risk.bbox) return null;
-          const [bx, by, bw, bh] = risk.bbox; // 百分比 0-100
           const rStyle = LEVEL_STYLE[risk.level] || LEVEL_STYLE["M"];
+
+          // 如果 bbox 为 null（如：涉及多个分散元素无法单框），用虚线全图占位
+          // 这样用户能直观看到"这张图有风险"且知道 AI 没精确框出位置
+          const useFallback = !risk.bbox;
+          const [bx, by, bw, bh] = useFallback
+            ? [2, 2, 96, 96] // 全图占位（96% 大小，留 2% 边距）
+            : risk.bbox!;
 
           // z-index 按风险等级：H=3（最顶层）, M=2, L=1
           const zIdx = risk.level === "H" ? 3 : risk.level === "M" ? 2 : 1;
@@ -156,17 +161,20 @@ function ImageRiskBox({ imgSrc, imgIdx, risks, activeRiskIdx, onRiskClick }: Ima
               <div
                 className="w-full h-full rounded-sm transition-all duration-200"
                 style={{
-                  border: `${activeBorder} solid ${rStyle.color}`,
+                  border: useFallback
+                    ? `${activeBorder} dashed ${rStyle.color}`  // 虚线表示"AI 未能精确定位"
+                    : `${activeBorder} solid ${rStyle.color}`,
                   backgroundColor: activeBg,
                 }}
               />
               {/* 悬停标签 */}
-              <div className="absolute left-0 top-0 -translate-y-full mb-1 hidden group-hover:block whitespace-nowrap">
+              <div className="absolute left-0 top-0 -translate-y-full mb-1 hidden group-hover:block whitespace-nowrap z-50">
                 <div
                   className="text-white text-xs px-2 py-0.5 rounded-t-md font-bold shadow-lg"
                   style={{ backgroundColor: rStyle.color }}
                 >
                   {LEVEL_LABEL[risk.level]} · {risk.type}
+                  {useFallback && " · 未能精确定位"}
                 </div>
               </div>
             </div>
@@ -186,6 +194,8 @@ function ImageRiskBox({ imgSrc, imgIdx, risks, activeRiskIdx, onRiskClick }: Ima
             : risk.source === "both" ? "图文结合"
             : risk.source === "text" ? "文字来源"
             : risk.source;
+          // 图片来源风险但 bbox 为 null → AI 没能精确定位
+          const noBbox = !risk.bbox && (risk.source.startsWith("image") || risk.source === "both");
           return (
             <div
               key={ri}
@@ -198,6 +208,11 @@ function ImageRiskBox({ imgSrc, imgIdx, risks, activeRiskIdx, onRiskClick }: Ima
               <div>
                 <span className="font-semibold text-gray-700">[{risk.id}] {risk.type}</span>
                 <span className="text-gray-400"> · {sourceLabel}</span>
+                {noBbox && (
+                  <span className="ml-1 text-xs px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded-full font-medium">
+                    ⚠️ AI 未精确定位
+                  </span>
+                )}
                 <span className="text-gray-500"> — {risk.description}</span>
               </div>
             </div>
